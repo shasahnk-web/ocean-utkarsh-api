@@ -298,7 +298,8 @@ def get_batch_content(batch_id):
     return jsonify({"status": True, "payload": encrypt_api_response({"videos": videos, "pdfs": pdfs, "dpps": dpps})})
 
 @app.route('/')
-def index(): return send_from_directory('static', 'index.html')
+def index():
+    return jsonify({"status": True, "message": "API is working perfectly!"})
 @app.route('/<path:path>')
 def static_files(path): return send_from_directory('static', path)
 
