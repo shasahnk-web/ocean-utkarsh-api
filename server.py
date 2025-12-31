@@ -145,8 +145,11 @@ def post_request_api(path, data=None, use_common_key=False, key=None, iv=None):
 def login():
     global user_auth
     mobile, password = os.environ.get("UTKARSH_EMAIL"), os.environ.get("UTKARSH_PASSWORD")
-    if not mobile or not password: return jsonify({"status": False, "error": "Missing credentials"})
+    if not mobile or not password: 
+        print(f"DEBUG: Missing ENV - EMAIL: {bool(mobile)}, PWD: {bool(password)}")
+        return jsonify({"status": False, "error": "Missing credentials in Environment Variables"})
     try:
+        print(f"DEBUG: Starting login for {mobile}")
         r1 = session.get(base_url)
         csrf_token = r1.cookies.get('csrf_name')
         user_auth["csrf"] = csrf_token
@@ -155,8 +158,11 @@ def login():
         resp = session.post(login_url, data=d1, headers=h)
         data = resp.json()
         dec_resp = decrypt_stream(data.get("response"))
-        if not dec_resp: return jsonify({"status": False, "error": "Login decryption failed"})
+        if not dec_resp: 
+            print("DEBUG: Login decryption failed")
+            return jsonify({"status": False, "error": "Login decryption failed"})
         dr1 = json.loads(dec_resp)
+        print(f"DEBUG: Login status: {dr1.get('status')}, Message: {dr1.get('message')}")
         if dr1.get("status"):
             user_auth["jwt"] = dr1.get("data", {}).get("jwt")
             user_auth["token"] = dr1.get("token")
@@ -173,9 +179,11 @@ def login():
                 user_auth["logged_in"] = True
                 user_auth["last_login"] = time.time()
                 return jsonify({"status": True, "payload": encrypt_api_response({"status": True})})
-            return jsonify({"status": False, "error": "Profile failed"})
+            return jsonify({"status": False, "error": "Profile fetch failed"})
         return jsonify({"status": False, "error": dr1.get("message")})
-    except Exception as e: return jsonify({"status": False, "error": str(e)})
+    except Exception as e: 
+        print(f"DEBUG: Exception: {str(e)}")
+        return jsonify({"status": False, "error": str(e)})
 
 @app.route('/batches')
 def get_batches():
